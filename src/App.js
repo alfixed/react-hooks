@@ -1,45 +1,46 @@
-import React, {useState} from 'react';
-
-function computeInitialCounter() {
-  console.log('Some calculations...');
-  return Math.trunc(Math.random() * 20);
-}
+import React, {useState, useEffect} from 'react';
 
 function App() {
-  const [counter, setCounter] = useState(() => {
-    return computeInitialCounter();
+  const [type, setType] = useState('users');
+  const [data, setData] = useState([]);
+  const [pos, setPos] = useState({
+    x: 0, y: 0
   });
 
-  const [state, setState] = useState({
-    title: 'Counter',
-    date: Date.now()
-  });
- 
-  function increment() {
-    setCounter(prev => prev + 1);
-  }
+  useEffect(() => {
+    fetch(`https://jsonplaceholder.typicode.com/${type}`)
+      .then(response => response.json())
+      .then(json => setData(json))
+  }, [type]);
 
-  function decrement() {
-    setCounter(prev => prev - 1);
-  }
 
-  function updateTitle(){
-    setState(prev => {
-      return {
-        ...prev,
-        title: 'New counter'
-      }
+  const mouseMoveHandler = event => {
+    setPos({
+      x: event.clientX,
+      y: event.clientY
     });
-  }
+  };
+
+  useEffect(() => {
+    console.log('ComponentDidMount');
+
+    window.addEventListener('mousemove', mouseMoveHandler);
+
+    return () => {
+      window.removeEventListener('mousemove', mouseMoveHandler);
+    }
+  }, []);
 
   return (
     <div>
-      <h1>Counter: {counter}</h1>
-      <button onClick={increment} className="btn btn-success">Add</button>
-      <button onClick={decrement} className="btn btn-danger">Remove</button>
-      <button onClick={updateTitle} className="btn btn-default">Edit name</button>
+      <h1>Resource: {type}</h1>
 
-      <pre>{JSON.stringify(state, null, 2)}</pre>
+      <button className="btn btn-primary" onClick={() => setType('users')}>Users</button>
+      <button className="btn btn-warning" onClick={() => setType('todos')}>Todos</button>
+      <button className="btn btn-info" onClick={() => setType('posts')}>Posts</button>
+
+      <pre>{JSON.stringify(pos, null, 2)}</pre>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
   );
 }
